@@ -332,6 +332,14 @@ async function loginUser() {
 
 window.addEventListener("load", checkURL);
 window.addEventListener("hashchange", checkURL);
+fetch("https://welcomepage-puma.onrender.com", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ name: "Pavan", gender: "Male" }),
+})
+
 </script>
 
 
