@@ -9,13 +9,27 @@ def connect_db():
     )
 
 # Insert new user
-def insert_user(name, age, gender):
+def insert_user(name, gender, age=None):
     db = connect_db()
     cursor = db.cursor()
     try:
+        sql = "INSERT INTO users (name, gender, age) VALUES (%s, %s, %s)"
+        cursor.execute(sql, (name, gender, age))
+        db.commit()
+        return True
+    except mysql.connector.IntegrityError as e:
+        print("Error:", e)  # This will help you debug the error
+        return False
+    finally:
+        cursor.close()
+        db.close()
+
+        db = connect_db()
+        cursor = db.cursor()
+try:
         sql = "INSERT INTO users (name, age, gender) VALUES (%s, %s, %s)"
         cursor.execute(sql, (name, age, gender))
-        db.commit()
+db.commit()
         return True
     except mysql.connector.IntegrityError:
         return False

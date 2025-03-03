@@ -54,7 +54,7 @@
             width: 90%;
         }
         .buttons-container {
-            margin-top: 20px;
+            margin-top: 60px;
             display: flex;
             gap: 15px;
             justify-content: center;
@@ -77,13 +77,27 @@
             100% { font-size: 10px; opacity: 0.5; }
         }
         .hello {
-            font-family: Arial, sans-serif;
-            font-weight: bold;
-            color: #002244;
-            animation: growText 3s infinite ease-in-out;
-            text-align: center;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    color: #002244;
+    animation: growText 3s infinite ease-in-out;
+    text-align: center;
+    position: absolute; /* Set absolute to make animation independent */
+    top: 0; /* Align it properly if needed */
+    width: 100%; /* Optional, to center text */
+}
+
             
-        }
+#welcome {
+    position: relative; /* Make the parent container a reference */
+    height: 200px; /* Adjust height to give space for animation */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    
+}
+
         .message {
             margin-top: 15px;
             padding: 10px;
@@ -126,9 +140,9 @@
 
     <div class="content" id="personalinfo">
         <h2><i class="fa-solid fa-user"></i> Personal Info</h2>
-        <label>Name: <input type="text" id="name" class="form-control" maxlength="10" oninput="validateName()"></label><br><br>
-        <label>Age: <input type="number" id="age" class="form-control" oninput="validateAge()" required></label><br><br>
-        <label>Gender:
+        <label>Name<span style="color: red;">*</span>: <input type="text" id="name" class="form-control" maxlength="20" oninput="validateName()"></label><br><br>
+        <label>Age<input type="number" id="age" class="form-control" oninput="validateAge()" required></label><br><br>
+        <label>Gender<span style="color: red;">*</span>:
             <select id="gender" class="form-select">
                 <option value="">Select Gender</option>
                 <option value="male">Male</option>
@@ -143,6 +157,7 @@
             <a href="javascript:void(0)" class="button back-button" onclick="goToMainPage()">Back</a>
         </div>
     </div>
+
 
     <div class="content" id="contact">
         <h2><i class="fa-solid fa-map-marker-alt"></i> Contact</h2>
@@ -183,23 +198,48 @@
 
         // When a nav link is clicked, remove main-page class
         document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', () => {
-                document.body.classList.remove('main-page');
+
+            document.body.classList.remove('main-page');
             });
         });
+       
 
         function validateName() {
-            let nameInput = document.getElementById("name");
-            nameInput.value = nameInput.value.replace(/[^a-zA-Z]/g, "");
-        }
+    let nameInput = document.getElementById("name");
+    // Allow only alphabets and spaces
+    nameInput.value = nameInput.value.replace(/[^a-zA-Z\s]/g, "");
 
-        function validateAge() {
-            let ageInput = document.getElementById("age");
-            ageInput.value = ageInput.value.replace(/[^0-9]/g, "");
-            if (ageInput.value > 100) {
-                ageInput.value = 100;
-            }
-        }
+    if (nameInput.value.length > 20) {
+        showMessage("Name must be up to 20 characters!", false);
+    } else if (nameInput.value.length >= 1) {
+        document.getElementById("message").style.display = "none";
+    } else if (nameInput.value.length === 0) {
+        showMessage("Please enter a name!", false);
+    }
+}
+
+
+function validateAge() {
+    let ageInput = document.getElementById("age");
+    ageInput.value = ageInput.value.replace(/[^0-9]/g, ""); // Allow only numbers
+    
+    // Remove leading zeros
+    ageInput.value = ageInput.value.replace(/^0+/, "");
+
+    if (/^0{2,}/.test(ageInput.value)) {
+        ageInput.value = ageInput.value.replace(/^0+/, "");
+    }
+
+    if (ageInput.value > 100) {
+        ageInput.value = 100;
+    }
+    if (ageInput.value < 1 && ageInput.value !== "") {
+        showMessage("Age must be between 1 and 100!", false);
+    } else {
+        document.getElementById("message").style.display = "none";
+    }
+}
+
 
         function showMessage(message, isSuccess) {
             const messageElement = document.getElementById("message");
@@ -214,70 +254,85 @@
         }
 
         async function registerUser() {
-            let name = document.getElementById("name").value.trim();
-            let age = document.getElementById("age").value.trim();
-            let gender = document.getElementById("gender").value;
-            
-            if (!name || !age || !gender) {
-                showMessage("Please fill in all fields (Name, Age, and Gender)", false);
-                return;
-            }
-            
-            try {
-                const response = await fetch('/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ name, age, gender })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    showMessage(data.message, true);
-                } else {
-                    showMessage(data.error, false);
-                }
-            } catch (error) {
-                showMessage("An error occurred. Please try again.", false);
-                console.error("Error:", error);
-            }
-        }
+    let name = document.getElementById("name").value.trim();
+    let age = document.getElementById("age").value.trim();
+    let gender = document.getElementById("gender").value;
+    let message = "";
 
-        async function loginUser() {
-            let name = document.getElementById("name").value.trim();
-            let age = document.getElementById("age").value.trim();
-            
-            if (!name || !age) {
-                showMessage("Please enter both Name and Age before logging in!", false);
-                return;
-            }
-            
-            try {
-                const response = await fetch('/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ name, age })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    showMessage(data.message, true);
-                } else {
-                    showMessage(data.error, false);
-                }
-            } catch (error) {
-                showMessage("An error occurred. Please try again.", false);
-                console.error("Error:", error);
-            }
-        }
+    if (!name) {
+        message += "Please enter Name! ";
+    }
+    if (!gender) {
+        message += "Please select Gender! ";
+    }
 
-        window.addEventListener("load", checkURL);
-        window.addEventListener("hashchange", checkURL);
-    </script>
-</body>
+    if (age && (age < 1 || age > 100)) {
+        message += "Age must be between 1 and 100!";
+    }
+
+    if (message) {
+        showMessage(message, false);
+        return;
+    }
+
+    try {
+        const response = await fetch('/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, age, gender })
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+            showMessage(data.message, true);
+            localStorage.setItem("username", name);
+            localStorage.setItem("age", age);
+            localStorage.setItem("gender", gender);
+        } else {
+            showMessage(data.error, false);
+        }
+    } catch (error) {
+        showMessage("An error occurred. Please try again.", false);
+        console.error("Error:", error);
+    }
+}
+
+async function loginUser() {
+    let name = document.getElementById("name").value.trim();
+    let gender = document.getElementById("gender").value.trim(); // Added gender input field
+
+    if (!name || !gender) { // Check Name and Gender
+        showMessage("Please enter both Name and Gender before logging in!", false);
+        return;
+    }
+
+    try {
+        const response = await fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, gender }) // Sending name and gender to backend
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            showMessage(data.message, true);
+        } else {
+            showMessage(data.error, false);
+        }
+    } catch (error) {
+        showMessage("An error occurred. Please try again.", false);
+        console.error("Error:", error);
+    }
+}
+
+window.addEventListener("load", checkURL);
+window.addEventListener("hashchange", checkURL);
+</script>
+
+
 </html>
